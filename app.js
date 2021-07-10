@@ -9,11 +9,18 @@ const passportGoogle=require('./auth/googleauth')
 const passportLocal=require('./auth/localauth');
 const verify  = require("./config/nodemailer");
 
+const multer =require("multer");
+const nodemailer=require("nodemailer");
+
+
+// for upload file
+
 
 //require("./passport-setup");
 //const {localConfig,googleConfig}=require('./passport-setup')
 
 // making common configurations
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -35,6 +42,60 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // all routes start here
+
+
+
+
+
+
+
+const fileStorageEngine=multer.diskStorage({
+  destination: function(req,file,callback){
+    callback(null,'./uploads');
+  },
+  filename: function(req,file,callback){
+    callback(null,file.originalname);
+  }
+});
+
+const upload=multer({storage:fileStorageEngine});
+
+let transporter=nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASS
+  }
+});
+
+
+let mailOptions={
+  from:'manishmatrix870@gmail.com',
+  to: 'mohitsingh952142@gmail.com',
+  subject:'heyy',
+  text: 'sdfghjkl; ccvbnm, ',
+  attachments:[{
+    filename:'New Microsoft Excel Worksheet.xlsx',
+    path:'./uploads/New Microsoft Excel Worksheet.xlsx'
+  }]
+};
+
+transporter.sendMail(mailOptions,function(err,info){
+  if(err){
+    console.log("this err");
+    console.log(err);
+    console.log("this err");
+  }else{
+    console.log("sent");
+  }
+});
+
+
+
+
+
+
+
 
 app.get("/", (req, res) => res.render("pages/index"));
 app.get("/failed", (req, res) => res.send("You Failed to log in!"));
